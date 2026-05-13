@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Number Divider</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161922;
+    --border: #252a36;
+    --accent: #00e5a0;
+    --accent2: #ff6b35;
+    --text: #e8eaf2;
+    --muted: #6b7280;
+    --danger: #ff4757;
+  }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), #00b8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+
+  textarea {
+    width: 100%;
+    height: 160px;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 1rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+
+  .counter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 0.7rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0, 229, 160, 0.1);
+    border: 1px solid rgba(0, 229, 160, 0.25);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-weight: 700;
+  }
+
+  .badge.warn {
+    background: rgba(255, 107, 53, 0.1);
+    border-color: rgba(255, 107, 53, 0.25);
+    color: var(--accent2);
+  }
+
+  .row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+  }
+
+  .field { flex: 1; }
+
+  input[type="number"] {
+    width: 100%;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  input[type="number"]:focus { border-color: var(--accent); }
+
+  .btn {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 10px;
+    padding: 0.8rem 1.8rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Results */
+  #results { display: none; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat {
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .group-card {
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .group-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .group-title span {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(0,229,160,0.1);
+    border-radius: 6px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .num-list {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 2;
+    color: #c9d0e0;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .remainder-card {
+    border-color: rgba(255,107,53,0.3);
+  }
+
+  .remainder-card .group-title { color: var(--accent2); }
+  .remainder-card .group-title span { background: rgba(255,107,53,0.1); }
+
+  .divider-line {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .msg-error {
+    color: var(--danger);
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>CN number divided!!!</h1>
+    <p>Split numbers across entry operators instantly</p>
+  </header>
+
+  <!-- Input Card -->
+  <div class="card">
+    <label>Paste CN Numbers</label>
+    <textarea id="phoneInput" placeholder="Paste numbers here — separated by space, comma, semicolon, or newline..."></textarea>
+    <div class="counter-bar">
+      <div class="badge" id="countBadge">0 numbers detected</div>
+    </div>
+  </div>
+
+  <!-- Families Card -->
+  <div class="card">
+    <div class="row">
+      <div class="field">
+        <label>Number of Families / Entry Operators</label>
+        <input type="number" id="familyCount" min="1" placeholder="e.g. 5">
+      </div>
+      <button class="btn" id="divideBtn" onclick="divide()" disabled>Divide →</button>
+    </div>
+    <div class="msg-error" id="errorMsg"></div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="card">
+      <div class="section-title">Summary</div>
+      <div class="summary-grid">
+        <div class="stat">
+          <div class="stat-value" id="sTotalNums">0</div>
+          <div class="stat-label">Total Numbers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="sFamilies">0</div>
+          <div class="stat-label">Entry Operator</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="sPerFamily">0</div>
+          <div class="stat-label">Each Gets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="sRemainder">0</div>
+          <div class="stat-label">Leftover</div>
+        </div>
+      </div>
+
+      <hr class="divider-line">
+
+      <div class="section-title">Groups</div>
+      <div class="groups-grid" id="groupsGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const phoneInput = document.getElementById('phoneInput');
+  const countBadge = document.getElementById('countBadge');
+  const familyCount = document.getElementById('familyCount');
+  const divideBtn  = document.getElementById('divideBtn');
+  const errorMsg   = document.getElementById('errorMsg');
+
+  let detectedNumbers = [];
+
+  function parseNumbers(text) {
+    return text.split(/[\s,;\n]+/)
+      .map(n => n.trim())
+      .filter(n => /^\d+$/.test(n));
+  }
+
+  phoneInput.addEventListener('input', () => {
+    detectedNumbers = parseNumbers(phoneInput.value);
+    const c = detectedNumbers.length;
+    countBadge.textContent = c === 0 ? '0 numbers detected' : `✓ ${c} number${c>1?'s':''} detected`;
+    countBadge.className = 'badge' + (c === 0 ? ' warn' : '');
+    updateBtn();
+  });
+
+  familyCount.addEventListener('input', () => {
+    errorMsg.textContent = '';
+    updateBtn();
+  });
+
+  function updateBtn() {
+    const f = parseInt(familyCount.value);
+    divideBtn.disabled = detectedNumbers.length === 0 || !(f > 0);
+  }
+
+  function copyGroup(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.innerText).then(() => {
+      const btn = el.closest('.group-card').querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+  function divide() {
+    errorMsg.textContent = '';
+    const nums = detectedNumbers;
+    const f = parseInt(familyCount.value);
+
+    if (!nums.length) { errorMsg.textContent = '⚠ No valid phone numbers found.'; return; }
+    if (!(f > 0))     { errorMsg.textContent = '⚠ Enter a valid number of families.'; return; }
+    if (f > nums.length) { errorMsg.textContent = `⚠ Families (${f}) cannot exceed numbers (${nums.length}).`; return; }
+
+    const perFamily = Math.floor(nums.length / f);
+    const remainder = nums.length % f;
+
+    // Summary
+    document.getElementById('sTotalNums').textContent  = nums.length;
+    document.getElementById('sFamilies').textContent   = f;
+    document.getElementById('sPerFamily').textContent  = perFamily;
+    document.getElementById('sRemainder').textContent  = remainder;
+
+    // Groups
+    const grid = document.getElementById('groupsGrid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < f; i++) {
+      const start = i * perFamily;
+      const group = nums.slice(start, start + perFamily);
+      const gid = `g-${i}`;
+      const delay = i * 40;
+
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      card.style.animationDelay = delay + 'ms';
+      card.innerHTML = `
+        <div class="group-title">
+          📁 Operator ${i + 1}
+          <div style="display:flex;gap:0.4rem;align-items:center">
+            <span>${group.length}</span>
+            <button class="copy-btn" onclick="copyGroup('${gid}')">Copy</button>
+          </div>
+        </div>
+        <div class="num-list" id="${gid}">${group.join('\n')}</div>
+      `;
+      grid.appendChild(card);
+    }
+
+    if (remainder > 0) {
+      const leftover = nums.slice(f * perFamily);
+      const gid = 'g-remainder';
+      const card = document.createElement('div');
+      card.className = 'group-card remainder-card';
+      card.style.animationDelay = (f * 40) + 'ms';
+      card.innerHTML = `
+        <div class="group-title">
+          ⚠ Remainder
+          <div style="display:flex;gap:0.4rem;align-items:center">
+            <span>${leftover.length}</span>
+            <button class="copy-btn" onclick="copyGroup('${gid}')">Copy</button>
+          </div>
+        </div>
+        <div class="num-list" id="${gid}">${leftover.join('\n')}</div>
+      `;
+      grid.appendChild(card);
+    }
+
+    const results = document.getElementById('results');
+    results.style.display = 'block';
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+</body>
+</html>
