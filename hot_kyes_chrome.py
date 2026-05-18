@@ -1,38 +1,51 @@
 import keyboard
 import sys
-import pyautogui
 import time
-
-pyautogui.FAILSAFE = True  # move mouse to top-left corner to emergency-stop
+from pywinauto.mouse import click
+from pywinauto import mouse
 
 HOTKEYS = {
-    'shift+1': (348, 270),
-    'shift+2': (534, 339),
-    'shift+3': (342, 266),
-    'shift+4': (769, 263),
-    'shift+5': (1027, 631),
+    'alt + shift + 1': (30, 235, True),      # double click + Enter
+    'alt + shift + 2': (260, 485, False),    # single click
+    'shift + 1': (348, 270, False),
+    'shift + 2': (534, 339, False),
+    'shift + 3': (342, 266, False),
+    'shift + 4': (769, 263, False),
+    'shift + 5': (1027, 631, False)
 }
 
-def make_clicker(x, y):
-    def click():
+def make_clicker(x, y, is_double=False):
+    def click_action():
         try:
-            pyautogui.click(x, y)
-        except pyautogui.FailSafeException:
-            print("FailSafe triggered. Exiting.")
-            sys.exit()
+            # single click at pixel
+            click(button='left', coords=(x, y))
+
+            # extra action for "double mode"
+            if is_double:
+                click(button='left', coords=(x, y))
+                keyboard.press_and_release('enter')
+
         except Exception as e:
             print(f"Click error: {e}")
-    return click
+            sys.exit()
 
-for hotkey, (x, y) in HOTKEYS.items():
-    keyboard.add_hotkey(hotkey, make_clicker(x, y), suppress=True, trigger_on_release=True)
+    return click_action
 
-print("Hotkeys active. Press Ctrl+C to exit.")
+
+for hotkey, (x, y, is_double) in HOTKEYS.items():
+    keyboard.add_hotkey(
+        hotkey,
+        make_clicker(x, y, is_double),
+        suppress=True,
+        trigger_on_release=True
+    )
+
+print("Hotkeys active (pywinauto version). Press Ctrl+C to exit.")
 
 try:
     while True:
-        time.sleep(0.09)  # more stable than keyboard.wait() for long runs
+        time.sleep(0.07)
 except KeyboardInterrupt:
-    print("You have exited.")
+    print("Exited cleanly.")
     keyboard.unhook_all()
     sys.exit()
